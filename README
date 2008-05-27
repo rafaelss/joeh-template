@@ -1,0 +1,34 @@
+This project provide a fast template engine for PHP5, using pure PHP code as syntax, but with some limitations (for programmer):
+
+1 - PHP tags must close in same line that were opened:
+
+  good:
+  <? if($var) { ?>
+    <p>that's ok</p>
+  <? } ?>
+
+  bad:
+  <?
+  if($var) {
+    ?>
+    <p>oopss, syntax error</p>
+    <?
+  }
+  ?>
+
+2 - PHP functions cannot be called directly, all permited functions are provided by helpers, these helpers can be
+    in core of framework, or created by users (kind of Smarty tags)
+
+  <?= $string->replace("_", "-", "joeh_template") ?>
+
+3 - Short PHP tags will be replaced for long tags in compiled code, for compability purposes
+
+  from:
+  <? if($var) { ?>
+    <?= $var ?>
+  <? } ?>
+
+  to:
+  <?php if($var) { ?>
+    <? echo $var ?>
+  <?php } ?>
