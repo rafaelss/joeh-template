@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-require_once LIB_PATH . 'Joeh/Template/Helper.php';
+require_once 'Joeh/Template/Helper.php';
 
 abstract class Joeh_Template_Base {
 
