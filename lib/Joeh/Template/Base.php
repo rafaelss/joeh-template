@@ -1,15 +1,11 @@
 <?php
 abstract class Joeh_Template_Base {
 
-  ###################
-  ## ABSTRACT METHODS
-  ###################
-
-  abstract function basePath();
-
-  abstract function cachePath();
-
-  abstract function compilePath();
+    protected $basePath;
+    
+    protected $cachePath;
+    
+    protected $compilePath;
 
   #################
   ## PUBLIC METHODS
@@ -34,7 +30,7 @@ abstract class Joeh_Template_Base {
     $this->save($name, $contents);
 
     ob_start();
-    include($this->compilePath() . "{$name}.php");
+    include($this->compilePath . "{$name}.php");
     $result = ob_get_clean();
     return $result;
   }
@@ -44,16 +40,15 @@ abstract class Joeh_Template_Base {
   ##################
 
   private function read($name) {
-    return file($this->basePath() . $name);
+    return file($this->basePath . $name);
   }
 
   private function save($name, $contents) {
-    $compilePath = $this->compilePath();
-    if(!is_dir($compilePath)) {
-      mkdir($compilePath, 0755, true);
+    if(!is_dir($this->compilePath)) {
+      mkdir($this->compilePath, 0755, true);
     }
 
-    file_put_contents($compilePath . "{$name}.php", $contents);
+    file_put_contents($this->compilePath . "{$name}.php", $contents);
   }
 }
 ?>
