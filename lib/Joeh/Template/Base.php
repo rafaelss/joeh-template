@@ -6,6 +6,8 @@ abstract class Joeh_Template_Base {
     protected $cachePath;
     
     protected $compilePath;
+    
+    protected $extension = 'tpl';
 
   #################
   ## PUBLIC METHODS
@@ -30,7 +32,7 @@ abstract class Joeh_Template_Base {
     $this->save($name, $contents);
 
     ob_start();
-    include($this->compilePath . "{$name}.php");
+    include($this->compilePath . "{$name}.{$this->extension}.php");
     $result = ob_get_clean();
     return $result;
   }
@@ -40,7 +42,7 @@ abstract class Joeh_Template_Base {
   ##################
 
   private function read($name) {
-    return file($this->basePath . $name);
+    return file($this->basePath . $name . '.' . $this->extension);
   }
 
   private function save($name, $contents) {
@@ -48,7 +50,7 @@ abstract class Joeh_Template_Base {
       mkdir($this->compilePath, 0755, true);
     }
 
-    file_put_contents($this->compilePath . "{$name}.php", $contents);
+    file_put_contents($this->compilePath . "{$name}.{$this->extension}.php", $contents);
   }
 }
 ?>
