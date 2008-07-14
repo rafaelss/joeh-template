@@ -2,11 +2,11 @@
 abstract class Joeh_Template_Base {
 
     protected $basePath;
-    
+
     protected $cachePath;
-    
+
     protected $compilePath;
-    
+
     protected $extension = 'tpl';
 
   #################
@@ -41,16 +41,18 @@ abstract class Joeh_Template_Base {
   ## PRIVATE METHODS
   ##################
 
-  private function read($name) {
-    return file($this->basePath . $name . '.' . $this->extension);
-  }
-
-  private function save($name, $contents) {
-    if(!is_dir($this->compilePath)) {
-      mkdir($this->compilePath, 0755, true);
+    private function read($name) {
+        return file($this->basePath . $name . '.' . $this->extension);
     }
 
-    file_put_contents($this->compilePath . "{$name}.{$this->extension}.php", $contents);
-  }
+    private function save($name, $contents) {
+        $fullCompilePath = $this->compilePath . "{$name}.{$this->extension}.php";
+
+        if(!is_dir(dirname($fullCompilePath))) {
+            mkdir(dirname($fullCompilePath), 0755, true);
+        }
+
+        file_put_contents($fullCompilePath, $contents);
+    }
 }
 ?>
