@@ -23,8 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-require_once dirname(__FILE__) . "/../Helper.php";
-require_once dirname(__FILE__) . "/../Tag.php";
+require_once LIB_PATH . "Joeh/Template/Helper.php";
+require_once LIB_PATH . "Joeh/Template/Tag.php";
 
 class Joeh_Template_Helper_Html extends Joeh_Template_Helper {
 
@@ -48,10 +48,16 @@ class Joeh_Template_Helper_Html extends Joeh_Template_Helper {
         return $button->toHTML() . PHP_EOL;
     }
 
+    public function contentType($type, $encoding = 'utf-8') {
+        return '<meta http-equiv="Content-Type" content="' . $type . '; charset=' . $encoding . '" />' . PHP_EOL;
+    }
+
     public function doctype($type) {
         switch($type) {
             case "xhtml1-transitional":
-                return "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" . PHP_EOL;
+                return '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">' . PHP_EOL;
+            case "xhtml1-strict":
+                return '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' . PHP_EOL;
         }
     }
 }
