@@ -1,6 +1,10 @@
 <?php
 abstract class Joeh_Template_Base {
 
+    #######################
+    ## PROTECTED PROPERTIES
+    #######################
+
     protected $basePath;
 
     protected $cachePath;
@@ -9,9 +13,46 @@ abstract class Joeh_Template_Base {
 
     protected $extension = 'tpl';
 
+    #####################
+    ## PRIVATE PROPERTIES
+    #####################
+    
+    private $variables = array();
+
+    ################
+    ## MAGIC METHODS
+    ################
+    
+    public function __get($name) {
+        return $this->variables[$name];
+    }
+
+    public function __set($name, $value) {
+        $this->variables[$name] = $value;
+    }
+
+    public function __isset($name) {
+        return isset($this->variables[$name]);
+    }
+
+    public function __unset($name) {
+        unset($this->variables[$name]);
+    }
+
     #################
     ## PUBLIC METHODS
     #################
+
+    public function assign($name, $value = null) {
+        if(is_array($name) || $name instanceof ArrayAccess) {
+            foreach($name as $name => $value) {
+                $this->assign($name, $value);
+            }
+        }
+        else {
+            $this->{$name} = $value;
+        }
+    }
 
     public function render($name, $return = false) {
         $contents = null;
@@ -25,6 +66,7 @@ abstract class Joeh_Template_Base {
 
             $line = preg_replace('/<\?[^=]/', '<?php ', $line);
             $line = preg_replace('/<\?=/', '<?php echo', $line);
+            $line = preg_replace('/\$([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)/', '\$this->\\1', $line);
 
             $contents .= $line;
         }
