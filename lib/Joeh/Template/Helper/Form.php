@@ -31,11 +31,5 @@ class Joeh_Template_Helper_Form extends Joeh_Template_Helper {
     public function getName() {
         return 'form';
     }
-
-    public function tag($action, $method = 'post') {
-        $url = new Joeh_Template_Helper_Url();
-        
-        return "<form action=\"{$url->base()}{$action}\" method=\"{$method}\">" . PHP_EOL;
-    }
 }
 ?>

@@ -100,5 +100,10 @@ class Joeh_Template_Helper_Html extends Joeh_Template_Helper {
         $link->addAttributesFromArray($htmlOptions);
         return $link->toHTML() . PHP_EOL;
     }
+
+    public function form($action = null, $method = 'post') {
+        $url = new Joeh_Template_Helper_Url();
+        return "<form action=\"{$url->base()}{$action}\" method=\"{$method}\">" . PHP_EOL;
+    }
 }
 ?>
