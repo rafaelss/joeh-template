@@ -95,6 +95,14 @@ class Joeh_Template_Helper_Html extends Joeh_Template_Helper {
             $href .= $options['controller'];
         }
 
+        if(isset($options['id'])) {
+            if(is_object($options['id']) && method_exists($options['id'], 'toParam')) {
+                $options['id'] = $options['id']->toParam();
+            }
+
+            $href .= '/' . $options['id'];
+        }
+
         $link = new Joeh_Template_Tag('a', $name);
         $link->href = $href;
         $link->addAttributesFromArray($htmlOptions);
