@@ -110,8 +110,38 @@ class Joeh_Template_Helper_Html extends Joeh_Template_Helper {
     }
 
     public function form($action = null, $method = 'post') {
+        $action = $this->urlFor($action);
+        return "<form action=\"{$action}\" method=\"{$method}\">" . PHP_EOL;
+    }
+
+    private function urlFor($options) {
+        if(is_string($options)) {
+            list($controller, $action) = split('\/', $options);
+            $options = array('controller' => $controller, 'action' => $action);
+        }
+
         $url = new Joeh_Template_Helper_Url();
-        return "<form action=\"{$url->base()}{$action}\" method=\"{$method}\">" . PHP_EOL;
+        $url = $url->base();
+
+        if((!empty($options['controller']) && $options['controller'] != 'index') && (!empty($options['action']) && $options['action'] != 'index')) {
+            $url .= $options['controller'] . '/' . $options['action'];
+        }
+        else if(!empty($options['action']) && $options['action'] != 'index') {
+            $url .= 'index/' . $options['action'];
+        }
+        else if(!empty($options['controller']) && $options['controller'] != 'index') {
+            $url .= $options['controller'];
+        }
+
+        if(isset($options['id'])) {
+            if(is_object($options['id']) && method_exists($options['id'], 'toParam')) {
+                $options['id'] = $options['id']->toParam();
+            }
+
+            $url .= '/' . $options['id'];
+        }
+
+        return $url;
     }
 }
 ?>
