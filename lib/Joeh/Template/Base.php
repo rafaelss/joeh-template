@@ -54,7 +54,7 @@ abstract class Joeh_Template_Base {
     }
 
     public function __set($name, $value) {
-        $this->variables[$name] = $value;
+        $this->assign($name, $value);
     }
 
     public function __isset($name) {
