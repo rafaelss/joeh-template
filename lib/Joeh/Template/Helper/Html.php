@@ -49,7 +49,10 @@ class Joeh_Template_Helper_Html extends Joeh_Template_Helper {
     }
 
     public function contentType($type, $encoding = 'utf-8') {
-        return '<meta http-equiv="Content-Type" content="' . $type . '; charset=' . $encoding . '" />' . PHP_EOL;
+        $meta = new Joeh_Template_Tag('meta');
+        $meta->{"http-equiv"} = 'Content-Type';
+        $meta->content = $type . '; charset=' . $encoding;
+        return $meta->toHTML() . PHP_EOL;
     }
 
     public function doctype($type) {
@@ -59,6 +62,43 @@ class Joeh_Template_Helper_Html extends Joeh_Template_Helper {
             case "xhtml1-strict":
                 return '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' . PHP_EOL;
         }
+    }
+
+    /**
+     * <code>
+     * $html->linkTo('New User', 'users/create') # <a href='http://.../users/create'>New User</a>
+     * $html->linkTo('List User', 'users'))       # <a href='http://.../users'>List User</a>
+     * $html->linkTo('New User', array('controller' => 'users', 'action' => 'create')) # <a href='http://.../users/create'>New User</a>
+     * $html->linkTo('List Users', array('controller' => 'users')) # <a href='http://.../users'>New User</a>
+     * $html->linkTo('Home', array('action' => 'index')) # <a href='http://.../'>Home</a>
+     * $html->linkTo('Home', array('controller' => 'index')) # <a href='http://.../'>Home</a>
+     * $html->linkTo('Home', array('controller' => 'index')) # <a href='http://.../'>Home</a>
+     * $html->linkTo('Home', null, array('id' => 'home_link')) # <a href='http://.../' id='html_link'>Home</a>
+     * </code>
+     */
+    public function linkTo($name, $options = array(), array $htmlOptions = array()) {
+        if(is_string($options)) {
+            list($controller, $action) = split('\/', $options);
+            $options = array('controller' => $controller, 'action' => $action);
+        }
+
+        $url = new Joeh_Template_Helper_Url();
+        $href = $url->base();
+
+        if((!empty($options['controller']) && $options['controller'] != 'index') && (!empty($options['action']) && $options['action'] != 'index')) {
+            $href .= $options['controller'] . '/' . $options['action'];
+        }
+        else if(!empty($options['action']) && $options['action'] != 'index') {
+            $href .= 'index/' . $options['action'];
+        }
+        else if(!empty($options['controller']) && $options['controller'] != 'index') {
+            $href .= $options['controller'];
+        }
+
+        $link = new Joeh_Template_Tag('a', $name);
+        $link->href = $href;
+        $link->addAttributesFromArray($htmlOptions);
+        return $link->toHTML() . PHP_EOL;
     }
 }
 ?>
