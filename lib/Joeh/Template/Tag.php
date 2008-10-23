@@ -35,7 +35,7 @@ class Joeh_Template_Tag {
 	/**
 	 * Construtor da classe. Recebe o nome e conteudo, se tiver,
 	 * do tag que será criado
-	 * 
+	 *
 	 * @param string $name
 	 * @param mixed $contents
 	 */
@@ -57,6 +57,14 @@ class Joeh_Template_Tag {
 		$this->addAttribute($name, $value);
 	}
 
+    public function __isset($name) {
+        return isset($this->element["attributes"][$name]);
+    }
+
+    public function __unset($name) {
+        unset($this->element["attributes"][$name]);
+    }
+
 	/**
 	 * Adiciona um atributo ao tag principal
 	 *
@@ -64,12 +72,20 @@ class Joeh_Template_Tag {
 	 * @param mixed $value
 	 */
 	public function addAttribute($name, $value) {
-		$this->element["attributes"][$name] = $value;
+        if($value === false) {
+            unset($this->element["attributes"][$name]);
+        }
+        else {
+            if($value === true) {
+                $value = $name;
+            }
+            $this->element["attributes"][$name] = $value;
+        }
 	}
 
 	/**
 	 * Adiciona atributos a tag apartir de um array associativo
-	 * 
+	 *
 	 * @param array $attributes
 	 */
 	public function addAttributesFromArray(array $attributes) {
@@ -91,7 +107,7 @@ class Joeh_Template_Tag {
 
 	/**
 	 * Diz se está setado um atributo para a tag
-	 * 
+	 *
 	 * @param string $name
 	 * @return boolean
 	 */
@@ -102,7 +118,7 @@ class Joeh_Template_Tag {
 
 	/**
 	 * Gera a string do elemento atual
-	 * 
+	 *
 	 * @return string
 	 */
 	public function toHTML() {
