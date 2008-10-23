@@ -49,6 +49,13 @@ abstract class Joeh_Template_Base {
     ## MAGIC METHODS
     ################
 
+    public function __call($method, $arguments) {
+        if(isset($this->{$method})) {
+            return $this->{$method};
+        }
+        throw new RuntimeException('Undefined method ' . $method);
+    }
+
     public function __get($name) {
         return $this->variables[$name];
     }
@@ -129,7 +136,9 @@ abstract class Joeh_Template_Base {
             mkdir(dirname($fullCompilePath), 0755, true);
         }
 
-        file_put_contents($fullCompilePath, $contents);
+        $fp = fopen($fullCompilePath, 'wb');
+        fwrite($fp, $contents);
+        fclose($fp);
     }
 }
 ?>
