@@ -27,6 +27,10 @@ require_once 'Joeh/Template/Helper.php';
 
 class Joeh_Template_Helper_Url extends Joeh_Template_Helper {
 
+    private $currentUrl;
+
+    private $baseUrl;
+
     public function getName() {
         return 'url';
     }
@@ -34,10 +38,27 @@ class Joeh_Template_Helper_Url extends Joeh_Template_Helper {
     public function base() {
         // TODO rever a forma de pegar a url
         //list($base, $path) = split('/index.php', $_SERVER['PHP_SELF']);
-        
-        $base = split('/index.php', $_SERVER['PHP_SELF']);
-        $base = reset($base);
-        return 'http://' . $_SERVER['HTTP_HOST'] . $base . '/'; // . $path; // TODO add https support
+
+        if(empty($this->baseUrl)) {
+            $base = str_replace($_SERVER['PATH_INFO'], '', str_replace('?' . $_SERVER['QUERY_STRING'], '', $_SERVER['REQUEST_URI']));
+            $base = trim($base, '/');
+            $this->baseUrl = 'http://' . $_SERVER['HTTP_HOST'] . '/' . $base . '/'; // . $path; // TODO add https support
+        }
+        return $this->baseUrl;
+    }
+
+    public function current() {
+        if(empty($this->currentUrl)) {
+            $this->currentUrl = 'http://' . $_SERVER['HTTP_HOST'] . str_replace('?' . $_SERVER['QUERY_STRING'], '', $_SERVER['REQUEST_URI']);
+        }
+        return $this->currentUrl;
+    }
+
+    public function referer() {
+        if(!empty($_SERVER['HTTP_REFERER'])) {
+            return $_SERVER['HTTP_REFERER'];
+        }
+        return null;
     }
 }
 ?>

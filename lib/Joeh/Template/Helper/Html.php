@@ -24,6 +24,7 @@ THE SOFTWARE.
 */
 
 require_once 'Joeh/Template/Helper.php';
+require_once 'Joeh/Template/Helper/Url.php';
 require_once 'Joeh/Template/Tag.php';
 
 class Joeh_Template_Helper_Html extends Joeh_Template_Helper {
@@ -35,8 +36,14 @@ class Joeh_Template_Helper_Html extends Joeh_Template_Helper {
     public function scriptTag($url) {
         $script = new Joeh_Template_Tag("script", "");
         $script->type = "text/javascript";
-        $script->src = $url;
+        $script->src = $this->javascriptPath($url);
         return $script->toHTML() . PHP_EOL;
+    }
+
+    public function javascriptPath($file) {
+        $path = "assets/js/" . $file;
+        $time = @filemtime(ROOT_PATH . $path);
+        return $this->url->base() . $path . '?' . $time;
     }
 
     public function buttonTag($value, array $options = array()) {
@@ -76,52 +83,188 @@ class Joeh_Template_Helper_Html extends Joeh_Template_Helper {
      * $html->linkTo('Home', null, array('id' => 'home_link')) # <a href='http://.../' id='html_link'>Home</a>
      * </code>
      */
-    public function linkTo($name, $options = array(), array $htmlOptions = array()) {
-        if(is_string($options)) {
-            list($controller, $action) = split('\/', $options);
-            $options = array('controller' => $controller, 'action' => $action);
-        }
+    public function linkTo($title, $options = array(), array $htmlOptions = array()) {
+        $href = $this->urlFor($options);
 
-        $url = new Joeh_Template_Helper_Url();
-        $href = $url->base();
+        unset($options['controller']);
+        unset($options['action']);
+        unset($options['id']);
 
-        if((!empty($options['controller']) && $options['controller'] != 'index') && (!empty($options['action']) && $options['action'] != 'index')) {
-            $href .= $options['controller'] . '/' . $options['action'];
-        }
-        else if(!empty($options['action']) && $options['action'] != 'index') {
-            $href .= 'index/' . $options['action'];
-        }
-        else if(!empty($options['controller']) && $options['controller'] != 'index') {
-            $href .= $options['controller'];
-        }
-
-        if(isset($options['id'])) {
-            if(is_object($options['id']) && method_exists($options['id'], 'toParam')) {
-                $options['id'] = $options['id']->toParam();
+        foreach($options as $key => $value) {
+            if(is_object($value) && method_exists($value, 'toParam')) {
+                $value = $value->toParam();
             }
-
-            $href .= '/' . $options['id'];
+            $href .= $key . '/' . $value . '/';
         }
 
-        $link = new Joeh_Template_Tag('a', $name);
-        $link->href = $href;
+        return $this->anchor($title, $href, $htmlOptions);
+    }
+
+    public function anchor($title, $url, array $htmlOptions = array()) {
+        $link = new Joeh_Template_Tag('a', $title);
         $link->addAttributesFromArray($htmlOptions);
+        $link->href = $url;
+
+        if(!empty($htmlOptions['confirm'])) {
+            $link->onclick = "return confirm('{$htmlOptions['confirm']}');";
+        }
+
         return $link->toHTML() . PHP_EOL;
     }
 
-    public function form($action = null, $method = 'post') {
+    public function form($action = null, array $htmlOptions = array(), $multipart = false, $method = 'post') {
         $action = $this->urlFor($action);
-        return "<form action=\"{$action}\" method=\"{$method}\">" . PHP_EOL;
+        $html = "<form action=\"{$action}\" method=\"{$method}\"";
+
+        if($multipart) {
+            $html .= " enctype=\"multipart/form-data\"";
+        }
+
+        foreach($htmlOptions as $key => $value) {
+            $html .= " {$key}=\"{$value}\"";
+        }
+
+        return $html . '>' . PHP_EOL;
     }
 
-    private function urlFor($options) {
+    public function stylesheetLink($file, $media = 'screen') {
+        $tag = new Joeh_Template_Tag('link');
+        $tag->href = $this->stylesheetPath($file);
+        $tag->media = $media;
+        $tag->rel = 'stylesheet';
+        $tag->type = 'text/css';
+        return $tag->toHTML() . PHP_EOL;
+    }
+
+    public function stylesheetPath($file) {
+        $path = "assets/css/" . $file;
+        $time = @filemtime(ROOT_PATH . $path);
+        return $this->url->base() . $path . '?' . $time;
+    }
+
+    public function image($src, array $htmlOptions = array()) {
+        if(!isset($htmlOptions['alt'])) {
+            $htmlOptions['alt'] = $src;
+        }
+
+        $tag = new Joeh_Template_Tag('img');
+        $tag->src = $this->imagePath($src);
+        $tag->addAttributesFromArray($htmlOptions);
+        return $tag->toHTML();
+    }
+
+    public function imagePath($src) {
+        if($src[0] == '/') {
+            $path = $src;
+        }
+        else {
+            $path = "assets/imgs/" . $src;
+        }
+
+        $time = @filemtime(ROOT_PATH . $path);
+        return $this->url->base() . $path . '?' . $time;
+    }
+
+    public function swfPath($src) {
+        if($src[0] == '/') {
+            $path = $src;
+        }
+        else {
+            $path = "assets/swf/" . $src;
+        }
+
+        $time = @filemtime(ROOT_PATH . $path);
+        return $this->url->base() . $path . '?' . $time;
+    }
+
+    public function escape() {
+        $texts = func_get_args();
+        $return = '';
+        foreach($texts as $text) {
+            $return .= htmlentities($text, ENT_QUOTES, 'UTF-8');
+        }
+        return $return;
+    }
+
+    public function paginate($collection) {
+        $currentPage = $this->request->page;
+        $foundRows = $collection->foundRows();
+        $offset = (empty($this->request->offset) ? count($collection) : $this->request->offset);
+
+        if(empty($currentPage)) {
+            $currentPage = 1;
+        }
+
+        $html = sprintf('<div class="pagination">
+            <div class="limit">
+                Registros por página  #
+                <select name="limit" id="limit" class="inputbox" size="1" onchange="%s">
+                    <option value="5"%s>5</option>
+                    <option value="10"%s>10</option>
+                    <option value="15"%s>15</option>
+                    <option value="20"%s>20</option>
+                    <option value="25"%s>25</option>
+                    <option value="30"%s>30</option>
+                    <option value="50"%s>50</option>
+                    <option value="100"%s>100</option>
+                    <option value="%s"%s>Todos</option>
+                </select>
+            </div>
+            <div><ul><li></li>',
+            "location.href='{$this->url->current()}?offset=' + \$(this).val();",
+            $offset == 5 ? ' selected="selected"' : null,
+            $offset == 10 ? ' selected="selected"' : null,
+            $offset == 15 ? ' selected="selected"' : null,
+            $offset == 20 ? ' selected="selected"' : null,
+            $offset == 25 ? ' selected="selected"' : null,
+            $offset == 30 ? ' selected="selected"' : null,
+            $offset == 50 ? ' selected="selected"' : null,
+            $offset == 100 ? ' selected="selected"' : null,
+            $foundRows,
+            $offset == $foundRows ? ' selected="selected"' : null
+        );
+
+        if($currentPage > 1) {
+            $prevPage = $currentPage - 1;
+            $html .= "<li><a href=\"{$this->url->current()}?page=1&offset={$offset}\">primeira</a></li>";
+            $html .= "<li><a href=\"{$this->url->current()}?page={$prevPage}&offset={$offset}\">anterior</a></li>";
+        }
+        else {
+            $html .= "<li>primeira</li>";
+            $html .= "<li>anterior</li>";
+        }
+
+        $totalPages = $collection->totalPages();
+        for($i = 1; $i <= $totalPages; $i++) {
+            if($i == $currentPage) {
+                $html .= "<li class=\"active\">{$i}</li>";
+            }
+            else {
+                $html .= "<li><a href=\"{$this->url->current()}?page={$i}&offset={$offset}\">{$i}</a></li>";
+            }
+        }
+
+        if($currentPage < $totalPages) {
+            $nextPage = $currentPage + 1;
+            $html .= "<a href=\"{$this->url->current()}?page={$nextPage}&offset={$offset}\">próxima</a>";
+            $html .= "<li><a href=\"{$this->url->current()}?page={$totalPages}&offset={$offset}\">última</a></li>";
+        }
+        else {
+            $html .= "<li>próxima</li>";
+            $html .= "<li>última</li>";
+        }
+
+        $html .= '</ul></div></div>';
+        return $html;
+    }
+
+    public function urlFor($options) {
         if(is_string($options)) {
             list($controller, $action) = split('\/', $options);
             $options = array('controller' => $controller, 'action' => $action);
         }
 
-        $url = new Joeh_Template_Helper_Url();
-        $url = $url->base();
+        $url = $this->url->base();
 
         if((!empty($options['controller']) && $options['controller'] != 'index') && (!empty($options['action']) && $options['action'] != 'index')) {
             $url .= $options['controller'] . '/' . $options['action'];
@@ -141,7 +284,7 @@ class Joeh_Template_Helper_Html extends Joeh_Template_Helper {
             $url .= '/' . $options['id'];
         }
 
-        return $url;
+        return $url . '/';
     }
 }
 ?>

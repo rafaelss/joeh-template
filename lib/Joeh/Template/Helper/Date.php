@@ -23,18 +23,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-abstract class Joeh_Template_Helper {
+require_once 'Joeh/Template/Helper.php';
 
-    private $base;
+class Joeh_Template_Helper_Date extends Joeh_Template_Helper {
 
-    abstract function getName();
-
-    public function __construct(Joeh_Template_Base $base) {
-        $this->base = $base;
+    public function getName() {
+        return 'date';
     }
 
-    public function __get($name) {
-        return $this->base->{$name};
+    public function format($date, $format = '%d/%m/%Y') {
+        if(preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/', $date)) {
+            $parsed = date_parse($date);
+            if($parsed['year'] > 0 && $parsed['month'] > 0 && $parsed['day'] > 0) {
+                $date = strftime($format, strtotime($date));
+            }
+            else {
+                $date = null;
+            }
+        }
+        return $date;
     }
 }
 ?>
