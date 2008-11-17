@@ -92,23 +92,10 @@ abstract class Joeh_Template_Base {
     }
 
     public function render($name, $return = false) {
-        $contents = null;
-        $lines = $this->read($name);
-        foreach($lines as $index => $line) {
-            if(strpos($line, '<?') !== false) {
-                if(strpos($line, '?>') === false || strpos($line, '<?php') !== false) {
-                    throw new RuntimeException("Syntax error in line " . ($index+1));
-                }
-            }
-
-            $line = preg_replace('/<\?[^=]/', '<?php ', $line);
-            $line = preg_replace('/<\?=/', '<?php echo', $line);
-            $line = preg_replace('/\$([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)/', '\$this->\\1', $line);
-
-            $contents .= $line;
+        if($this->needCompile($name)) {
+            $contents = $this->compile($name);
+            $this->save($name, $contents);
         }
-
-        $this->save($name, $contents);
 
         ob_start();
         include($this->compilePath . "{$name}.{$this->extension}.php");
@@ -125,11 +112,31 @@ abstract class Joeh_Template_Base {
     ## PRIVATE METHODS
     ##################
 
+    private function compile($name) {
+        $contents = null;
+        $lines = $this->read($name);
+        foreach($lines as $index => $line) {
+            if(strpos($line, '<?') !== false) {
+                if(strpos($line, '?>') === false || strpos($line, '<?php') !== false) {
+                    throw new RuntimeException("Syntax error in line " . ($index+1));
+                }
+            }
+
+            $line = preg_replace('/<\?[^=]/', '<?php ', $line);
+            $line = preg_replace('/<\?=/', '<?php echo', $line);
+            $line = preg_replace('/\$([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)/', '\$this->\\1', $line);
+
+            $contents .= $line;
+        }
+        return $contents;
+    }
+
     private function read($name) {
         return file($this->basePath . $name . '.' . $this->extension);
     }
 
     private function save($name, $contents) {
+        $fullTemplatePath = $this->basePath . $name . '.' . $this->extension;
         $fullCompilePath = $this->compilePath . "{$name}.{$this->extension}.php";
 
         if(!is_dir(dirname($fullCompilePath))) {
@@ -139,6 +146,23 @@ abstract class Joeh_Template_Base {
         $fp = fopen($fullCompilePath, 'wb');
         fwrite($fp, $contents);
         fclose($fp);
+
+        touch($fullCompilePath, filemtime($fullTemplatePath)+2);
+    }
+
+    private function needCompile($name) {
+        $fullCompilePath = $this->compilePath . "{$name}.{$this->extension}.php";
+        if(file_exists($fullCompilePath)) {
+            $fullTemplatePath = $this->basePath . $name . '.' . $this->extension;
+
+            $viewTime = filemtime($fullTemplatePath)+2;
+            $compiledViewTime = filemtime($fullCompilePath);
+
+            if($viewTime == $compiledViewTime) {
+                return false;
+            }
+        }
+        return true;
     }
 }
 ?>
