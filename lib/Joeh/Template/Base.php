@@ -76,6 +76,10 @@ abstract class Joeh_Template_Base {
     ## PUBLIC METHODS
     #################
 
+    public function setExtension($extension) {
+        $this->extension = $extension;
+    }
+
     public function assign($name, $value = null) {
         if(is_array($name) || $name instanceof ArrayAccess) {
             foreach($name as $name => $value) {
@@ -92,7 +96,7 @@ abstract class Joeh_Template_Base {
     }
 
     public function render($name, $return = false) {
-        if($this->needCompile($name)) {
+          if($this->needCompile($name)) {
             $contents = $this->compile($name);
             $this->save($name, $contents);
         }
