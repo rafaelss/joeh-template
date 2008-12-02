@@ -136,7 +136,12 @@ abstract class Joeh_Template_Base {
     }
 
     private function read($name) {
-        return file($this->basePath . $name . '.' . $this->extension);
+        $path = $this->basePath . $name . '.' . $this->extension;
+        if(file_exists($path) && is_readable($path)) {
+            return file($this->basePath . $name . '.' . $this->extension);
+        }
+
+        throw new Exception("File {$path} cannot be loaded, check if it exists and/or have read permissions");
     }
 
     private function save($name, $contents) {
