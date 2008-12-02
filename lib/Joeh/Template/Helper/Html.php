@@ -257,34 +257,5 @@ class Joeh_Template_Helper_Html extends Joeh_Template_Helper {
         $html .= '</ul></div></div>';
         return $html;
     }
-
-    public function urlFor($options) {
-        if(is_string($options)) {
-            list($controller, $action) = split('\/', $options);
-            $options = array('controller' => $controller, 'action' => $action);
-        }
-
-        $url = $this->url->base();
-
-        if((!empty($options['controller']) && $options['controller'] != 'index') && (!empty($options['action']) && $options['action'] != 'index')) {
-            $url .= $options['controller'] . '/' . $options['action'];
-        }
-        else if(!empty($options['action']) && $options['action'] != 'index') {
-            $url .= 'index/' . $options['action'];
-        }
-        else if(!empty($options['controller']) && $options['controller'] != 'index') {
-            $url .= $options['controller'];
-        }
-
-        if(isset($options['id'])) {
-            if(is_object($options['id']) && method_exists($options['id'], 'toParam')) {
-                $options['id'] = $options['id']->toParam();
-            }
-
-            $url .= '/' . $options['id'];
-        }
-
-        return $url . '/';
-    }
 }
 ?>
