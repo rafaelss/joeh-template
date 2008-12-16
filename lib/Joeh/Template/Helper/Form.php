@@ -32,7 +32,19 @@ class Joeh_Template_Helper_Form extends Joeh_Template_Helper {
         return 'form';
     }
 
-    public function text($name, $value = null, array $htmlOptions = array()) {
+    public function text($object, $property, array $htmlOptions = array()) {
+        $htmlOptions['id'] = sprintf('%s_%s', $object, $property);
+        $name = sprintf('%s[%s]', $object, $property);
+        $value = null;
+
+        if(isset($this->{$object}) && isset($this->{$object}->{$property})) {
+            $value = $this->{$object}->{$property};
+        }
+
+        return $this->textTag($name, $value, $htmlOptions);
+    }
+
+    public function textTag($name, $value = null, array $htmlOptions = array()) {
         return $this->input('text', $name, $value, $htmlOptions);
     }
 
