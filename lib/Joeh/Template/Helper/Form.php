@@ -66,7 +66,19 @@ class Joeh_Template_Helper_Form extends Joeh_Template_Helper {
         return $textarea->toHTML();
     }
 
-    public function password($name = 'password', $value = null, array $htmlOptions = array()) {
+    public function password($object, $property, array $htmlOptions = array()) {
+        $htmlOptions['id'] = sprintf('%s_%s', $object, $property);
+        $name = sprintf('%s[%s]', $object, $property);
+        $value = null;
+
+        if(isset($this->{$object}) && isset($this->{$object}->{$property})) {
+            $value = $this->{$object}->{$property};
+        }
+
+        return $this->passwordTag($name, $value, $htmlOptions);
+    }
+
+    public function passwordTag($name = 'password', $value = null, array $htmlOptions = array()) {
         return $this->input('password', $name, $value, $htmlOptions);
     }
 
