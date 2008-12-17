@@ -42,7 +42,11 @@ class Joeh_Template_Helper_Url extends Joeh_Template_Helper {
         if(empty($this->baseUrl)) {
             $base = str_replace($_SERVER['PATH_INFO'], '', str_replace('?' . $_SERVER['QUERY_STRING'], '', $_SERVER['REQUEST_URI']));
             $base = trim($base, '/');
-            $this->baseUrl = 'http://' . $_SERVER['HTTP_HOST'] . '/' . $base . '/'; // . $path; // TODO add https support
+            $port = $_SERVER['SERVER_PORT'];
+
+            file_put_contents(LOG_PATH . 'server.log', print_r($_SERVER, true));
+            //$this->baseUrl = 'http://' . $_SERVER['HTTP_HOST'] . '/' . $base . '/'; // . $path; // TODO add https support
+            $this->baseUrl = sprintf('http://%s%s%s/%s/', $_SERVER['HTTP_HOST'], ($port != 80 ? ':' : ''), ($port != 80 ? $port : ''), $base); // . $path; // TODO add https support
         }
         return $this->baseUrl;
     }
