@@ -113,8 +113,7 @@ class Joeh_Template_Helper_Html extends Joeh_Template_Helper {
     }
 
     public function form($action = null, array $htmlOptions = array(), $multipart = false, $method = 'post') {
-        $action = $this->urlFor($action);
-        $html = "<form action=\"{$action}\" method=\"{$method}\"";
+        $html = "<form action=\"" . ROOT_URL . "{$action}\" method=\"{$method}\"";
 
         if($multipart) {
             $html .= " enctype=\"multipart/form-data\"";
