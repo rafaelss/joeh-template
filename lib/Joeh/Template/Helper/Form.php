@@ -234,7 +234,20 @@ class Joeh_Template_Helper_Form extends Joeh_Template_Helper {
         return $this->input('hidden', $name, $value, $htmlOptions);
     }
 
-    public function check($name, $value = "1", $checked = false, array $htmlOptions = array()) {
+    public function check($object, $property, $defaultValue = "1", array $htmlOptions = array()) {
+        $htmlOptions['id'] = sprintf('%s_%s', $object, $property);
+        $name = sprintf('%s[%s]', $object, $property);
+        $value = null;
+
+        $checked = false;
+        if(isset($this->{$object}) && isset($this->{$object}->{$property})) {
+            $checked = ($defaultValue == $this->{$object}->{$property});
+        }
+
+        return $this->checkTag($name, $defaultValue, $checked, $htmlOptions);
+    }
+
+    public function checkTag($name, $value = "1", $checked = false, array $htmlOptions = array()) {
         if($checked) {
             $htmlOptions['checked'] = 'checked';
         }
