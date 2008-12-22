@@ -1,4 +1,7 @@
-This project provide a fast template engine for PHP5, using pure PHP code as syntax, but with some limitations (for programmer):
+Joeh-Template is a fast template engine for PHP5, using pure PHP syntax, and generating PHP compatible code for all PHP installations.
+The main idea is just let developers to use PHP inside templates, but without let that developers write ugly code, difficulting manutenability.
+
+Functionalities:
 
 1 - PHP tags must close in same line that were opened:
 
@@ -11,17 +14,12 @@ This project provide a fast template engine for PHP5, using pure PHP code as syn
   <?
   if($var) {
     ?>
-    <p>oopss, syntax error</p>
+    <p>oopss, wrong syntax</p>
     <?
   }
   ?>
 
-2 - PHP functions cannot be called directly, all permited functions are provided by helpers, these helpers can be
-    in core of framework, or created by users (kind of Smarty tags)
-
-  <?= $string->replace("_", "-", "joeh_template") ?>
-
-3 - Short PHP tags will be replaced for long tags in compiled code, for compability purposes
+2 - Short PHP tags will be replaced for long tags in compiled code, for compability purposes
 
   from:
   <? if($var) { ?>
