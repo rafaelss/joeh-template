@@ -27,13 +27,17 @@ require_once 'Joeh/Template/Helper.php';
 
 abstract class Joeh_Template_Base {
 
+    ####################
+    ## PUBLIC PROPERTIES
+    ####################
+
+    public $cachePath;
+
     #######################
     ## PROTECTED PROPERTIES
     #######################
 
     protected $basePath;
-
-    protected $cachePath;
 
     protected $compilePath;
 
@@ -135,14 +139,14 @@ abstract class Joeh_Template_Base {
                 }
             }
 
-            if(strpos($line, '<?#cache') !== false) {
-                $appender->unshift(new Joeh_Template_Appender_Cache());
-                $line = preg_replace('/<\?#cache/', '<? if($base->startCache()) { ', $line);
-            }
-            else if(strpos($line, '<?#end') !== false) {
-                $appender->shift();
-                $line = preg_replace('/<\?#end/', '<? } ', $line);
-            }
+            #if(strpos($line, '<?#cache') !== false) {
+            #    $appender->unshift(new Joeh_Template_Appender_Cache());
+            #    $line = preg_replace('/<\?#cache/', '<? if($base->startCache()) { ', $line);
+            #}
+            #else if(strpos($line, '<?#end') !== false) {
+            #    $appender->shift();
+            #    $line = preg_replace('/<\?#end/', '<? } ', $line);
+            #}
 
             $line = preg_replace('/<\?[^=]/', '<?php ', $line);
             $line = preg_replace('/<\?=/', '<?php echo', $line);
@@ -227,23 +231,23 @@ class Joeh_Template_Appender {
     public function unshift(Joeh_Template_Appender_Base $appender) {
         $this->contents .= $this->appenders[0]->__toString();
         array_unshift($this->appenders, $appender);
-        printr(get_class($appender), 'unshift');
+        #printr(get_class($appender), 'unshift');
     }
 
     public function shift() {
         $appender = array_shift($this->appenders);
-        printr(get_class($appender), 'shift');
+        #printr(get_class($appender), 'shift');
         $this->contents .= $appender->__toString();
     }
 
     public function append($contents) {
         $this->appenders[0]->append($contents);
-        printr(get_class($this->appenders[0]), 'append');
+        #printr(get_class($this->appenders[0]), 'append');
     }
 
     public function __toString() {
         $this->shift();
-        printr($this->contents, '__toString');
+        #printr($this->contents, '__toString');
         return $this->contents;
     }
 }
