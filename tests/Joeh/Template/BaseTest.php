@@ -68,6 +68,10 @@ class Joeh_Template_BaseTest extends Joeh_Test_UnitTestCase {
     $this->assertNotNull($this->template->render("name.tpl"));
   }
 
+  public function testRenderWithCache() {
+    $this->assetNotNull($this->template->render('with_cache.tpl'));
+  }
+
   public function testSyntaxError() {
     $this->setExpectedException("RuntimeException", "Syntax error in line 1");
     $this->template->render("syntax_error.tpl");

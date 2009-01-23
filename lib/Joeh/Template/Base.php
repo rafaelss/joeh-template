@@ -45,6 +45,8 @@ abstract class Joeh_Template_Base {
 
     private $variables = array();
 
+    private $cachedLines = array();
+
     ################
     ## MAGIC METHODS
     ################
@@ -125,10 +127,20 @@ abstract class Joeh_Template_Base {
                     throw new RuntimeException("Syntax error in line " . ($index+1));
                 }
             }
-
-            $line = preg_replace('/<\?[^=]/', '<?php ', $line);
-            $line = preg_replace('/<\?=/', '<?php echo', $line);
-            $line = preg_replace('/\$([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)/', '\$this->\\1', $line);
+            if(strpos($line, '<?#cache') !== false) {
+                #$line = preg_replace('<?#cache', '<?php ob_start(array(\$this, "cache")) ', $line);
+                $line = preg_replace('/<\?#cache/', '<?php if(!$this->cached(basename(__FILE__, ".php"), ' . $index . ')) { ', $line);
+                array_push($this->cachedLines, $index);
+            }
+            else if(strpos($line, '<?#end') !== false) {
+                $cachedLine = array_pop($this->cachedLines);
+                $line = preg_replace('/<\?#end/', '<?php $this->doCache(basename(__FILE__, ".php"), ' . $cachedLine . '); } else { require $this->cachePath . basename(__FILE__, ".php") . ".cache.' . $cachedLines . '.php"; } ', $line);
+            }
+            else {
+                $line = preg_replace('/<\?[^=]/', '<?php ', $line);
+                $line = preg_replace('/<\?=/', '<?php echo', $line);
+                $line = preg_replace('/\$([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)/', '\$this->\\1', $line);
+            }
 
             $contents .= $line;
         }
@@ -172,6 +184,21 @@ abstract class Joeh_Template_Base {
             }
         }
         return true;
+    }
+
+    private function cached($file, $line) {
+      if(file_exists($this->cachePath . $file . '.cache.' . $line . '.php')) {
+        return true;
+      }
+
+      ob_start();
+      return false;
+    }
+
+    private function doCache($file, $line) {
+      $contents = ob_get_clean();
+      file_put_contents($this->cachePath . $file . '.cache.' . $line . '.php', $contents);
+      echo $contents;
     }
 }
 ?>
