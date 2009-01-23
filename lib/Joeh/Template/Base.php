@@ -47,6 +47,8 @@ abstract class Joeh_Template_Base {
 
     private $cachedLines = array();
 
+    private $appenders = array();
+
     ################
     ## MAGIC METHODS
     ################
@@ -121,30 +123,35 @@ abstract class Joeh_Template_Base {
     private function compile($name) {
         $contents = null;
         $lines = $this->read($name);
+
+        $this->appenders[0] = new Joeh_Template_Appender_Base();
+
         foreach($lines as $index => $line) {
             if(strpos($line, '<?') !== false) {
                 if(strpos($line, '?>') === false || strpos($line, '<?php') !== false) {
                     throw new RuntimeException("Syntax error in line " . ($index+1));
                 }
             }
+            $line = preg_replace('/<\?[^=]/', '<?php ', $line);
+            $line = preg_replace('/<\?=/', '<?php echo', $line);
+            $line = preg_replace('/\$([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)/', '\$this->\\1', $line);
             if(strpos($line, '<?#cache') !== false) {
+                array_unshift($this->appenders, new Joeh_Template_Cache());
+
                 #$line = preg_replace('<?#cache', '<?php ob_start(array(\$this, "cache")) ', $line);
-                $line = preg_replace('/<\?#cache/', '<?php if(!$this->cached(basename(__FILE__, ".php"), ' . $index . ')) { ', $line);
-                array_push($this->cachedLines, $index);
+                #$line = preg_replace('/<\?#cache/', '<?php if(!$this->cached(basename(__FILE__, ".php"), ' . $index . ')) { ', $line);
+                #array_push($this->cachedLines, $index);
             }
             else if(strpos($line, '<?#end') !== false) {
-                $cachedLine = array_pop($this->cachedLines);
-                $line = preg_replace('/<\?#end/', '<?php $this->doCache(basename(__FILE__, ".php"), ' . $cachedLine . '); } else { require $this->cachePath . basename(__FILE__, ".php") . ".cache.' . $cachedLines . '.php"; } ', $line);
-            }
-            else {
-                $line = preg_replace('/<\?[^=]/', '<?php ', $line);
-                $line = preg_replace('/<\?=/', '<?php echo', $line);
-                $line = preg_replace('/\$([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)/', '\$this->\\1', $line);
+                array_shift($this->appenders);
+
+                #$cachedLine = array_pop($this->cachedLines);
+                #$line = preg_replace('/<\?#end/', '<?php $this->doCache(basename(__FILE__, ".php"), ' . $cachedLine . '); } else { require $this->cachePath . basename(__FILE__, ".php") . ".cache.' . $cachedLine . '.php"; } ', $line);
             }
 
-            $contents .= $line;
+            $this->appenders[0]->append($line);
         }
-        return $contents;
+        return $this->appenders[0]->__toString();
     }
 
     private function read($name) {
@@ -196,9 +203,32 @@ abstract class Joeh_Template_Base {
     }
 
     private function doCache($file, $line) {
-      $contents = ob_get_clean();
-      file_put_contents($this->cachePath . $file . '.cache.' . $line . '.php', $contents);
-      echo $contents;
+        if(!is_dir($this->cachePath)) {
+            mkdir($this->cachePath, 0777, true);
+        } 
+        $contents = ob_get_clean();
+        file_put_contents($this->cachePath . $file . '.cache.' . $line . '.php', $contents);
+        echo $contents;
+    }
+}
+
+class Joeh_Template_Appender_Base {
+
+    private $contents = "";
+
+    public function append($contents) {
+        $this->contents .= $contents;
+    }
+
+    public function __toString() {
+        return $this->contents;
+    }
+}
+
+class Joeh_Template_Appender_Cache extends Joeh_Template_Appender_Base {
+
+    public function __toString() {
+        return "require \"nome_do_arquivo_em_cache.tpl.php\"";
     }
 }
 ?>
