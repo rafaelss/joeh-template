@@ -256,5 +256,28 @@ class Joeh_Template_Helper_Html extends Joeh_Template_Helper {
         $html .= '</ul></div></div>';
         return $html;
     }
+
+    private function urlFor($options) {
+        if(is_string($options)) {
+        	if(strpos($options, 'http://') === 0) {
+        		return $options;
+        	}
+            return ROOT_URL . $options;
+        }
+
+        if(empty($options['prefix'])) {
+            $options['prefix'] = null;
+        }
+
+        if(empty($options['controller'])) {
+            $options['controller'] = $this->request->controller;
+        }
+
+        if(empty($options['action'])) {
+            $options['action'] = $this->request->action;
+        }
+
+        return sprintf("%s%s/%s/%s", ROOT_URL, $options['prefix'], $options['controller'], $options['action']);
+    }
 }
 ?>
