@@ -46,4 +46,9 @@ if(!defined('UPLOAD_PATH')) {
 }
 
 set_include_path(get_include_path() . PATH_SEPARATOR . VENDOR_PATH);
+
+function printr($var, $title) {
+    echo "{$title} ------------------------------\n";
+    echo print_r($var, true) . "\n";
+}
 ?>
