@@ -39,6 +39,8 @@ abstract class Joeh_Template_Base {
 
     protected $extension = 'tpl';
 
+    protected $forceCompile = true;
+
     #####################
     ## PRIVATE PROPERTIES
     #####################
@@ -124,7 +126,7 @@ abstract class Joeh_Template_Base {
         $contents = null;
         $lines = $this->read($name);
 
-        $this->appenders[0] = new Joeh_Template_Appender_Base();
+        $appender = new Joeh_Template_Appender(new Joeh_Template_Appender_Base());
 
         foreach($lines as $index => $line) {
             if(strpos($line, '<?') !== false) {
@@ -132,26 +134,23 @@ abstract class Joeh_Template_Base {
                     throw new RuntimeException("Syntax error in line " . ($index+1));
                 }
             }
+
+            if(strpos($line, '<?#cache') !== false) {
+                $appender->unshift(new Joeh_Template_Appender_Cache());
+                $line = preg_replace('/<\?#cache/', '<? if($base->startCache()) { ', $line);
+            }
+            else if(strpos($line, '<?#end') !== false) {
+                $appender->shift();
+                $line = preg_replace('/<\?#end/', '<? } ', $line);
+            }
+
             $line = preg_replace('/<\?[^=]/', '<?php ', $line);
             $line = preg_replace('/<\?=/', '<?php echo', $line);
             $line = preg_replace('/\$([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)/', '\$this->\\1', $line);
-            if(strpos($line, '<?#cache') !== false) {
-                array_unshift($this->appenders, new Joeh_Template_Cache());
 
-                #$line = preg_replace('<?#cache', '<?php ob_start(array(\$this, "cache")) ', $line);
-                #$line = preg_replace('/<\?#cache/', '<?php if(!$this->cached(basename(__FILE__, ".php"), ' . $index . ')) { ', $line);
-                #array_push($this->cachedLines, $index);
-            }
-            else if(strpos($line, '<?#end') !== false) {
-                array_shift($this->appenders);
-
-                #$cachedLine = array_pop($this->cachedLines);
-                #$line = preg_replace('/<\?#end/', '<?php $this->doCache(basename(__FILE__, ".php"), ' . $cachedLine . '); } else { require $this->cachePath . basename(__FILE__, ".php") . ".cache.' . $cachedLine . '.php"; } ', $line);
-            }
-
-            $this->appenders[0]->append($line);
+            $appender->append($line);
         }
-        return $this->appenders[0]->__toString();
+        return $appender->__toString();
     }
 
     private function read($name) {
@@ -179,6 +178,10 @@ abstract class Joeh_Template_Base {
     }
 
     private function needCompile($name) {
+        if($this->forceCompile) {
+            return true;
+        }
+
         $fullCompilePath = $this->compilePath . "{$name}.{$this->extension}.php";
         if(file_exists($fullCompilePath)) {
             $fullTemplatePath = $this->basePath . $name . '.' . $this->extension;
@@ -211,6 +214,39 @@ abstract class Joeh_Template_Base {
         echo $contents;
     }
 }
+class Joeh_Template_Appender {
+
+    private $contents = "";
+
+    private $appenders = array();
+
+    public function __construct(Joeh_Template_Appender_Base $appender) {
+        $this->appenders[0] = $appender;
+    }
+
+    public function unshift(Joeh_Template_Appender_Base $appender) {
+        $this->contents .= $this->appenders[0]->__toString();
+        array_unshift($this->appenders, $appender);
+        printr(get_class($appender), 'unshift');
+    }
+
+    public function shift() {
+        $appender = array_shift($this->appenders);
+        printr(get_class($appender), 'shift');
+        $this->contents .= $appender->__toString();
+    }
+
+    public function append($contents) {
+        $this->appenders[0]->append($contents);
+        printr(get_class($this->appenders[0]), 'append');
+    }
+
+    public function __toString() {
+        $this->shift();
+        printr($this->contents, '__toString');
+        return $this->contents;
+    }
+}
 
 class Joeh_Template_Appender_Base {
 
@@ -221,14 +257,16 @@ class Joeh_Template_Appender_Base {
     }
 
     public function __toString() {
-        return $this->contents;
+        $contents = $this->contents;
+        $this->contents = "";
+        return $contents;
     }
 }
 
 class Joeh_Template_Appender_Cache extends Joeh_Template_Appender_Base {
 
-    public function __toString() {
-        return "require \"nome_do_arquivo_em_cache.tpl.php\"";
-    }
+    #public function __toString() {
+    #    return "require \"nome_do_arquivo_em_cache.tpl.php\"";
+    #}
 }
 ?>
