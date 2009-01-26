@@ -43,7 +43,7 @@ class Joeh_Template_Helper_Html extends Joeh_Template_Helper {
     public function javascriptPath($file) {
         $path = "assets/js/" . $file;
         $time = @filemtime(ROOT_PATH . $path);
-        return $this->url->base() . $path . '?' . $time;
+        return $this->urlFor($path . '?' . $time);
     }
 
     public function buttonTag($value, array $options = array()) {
@@ -113,7 +113,7 @@ class Joeh_Template_Helper_Html extends Joeh_Template_Helper {
     }
 
     public function form($action = null, array $htmlOptions = array(), $multipart = false, $method = 'post') {
-        $html = "<form action=\"" . ROOT_URL . "{$action}\" method=\"{$method}\"";
+        $html = "<form action=\"" . $this->urlFor($action) . "\" method=\"{$method}\"";
 
         if($multipart) {
             $html .= " enctype=\"multipart/form-data\"";
@@ -138,7 +138,7 @@ class Joeh_Template_Helper_Html extends Joeh_Template_Helper {
     public function stylesheetPath($file) {
         $path = "assets/css/" . $file;
         $time = @filemtime(ROOT_PATH . $path);
-        return $this->url->base() . $path . '?' . $time;
+        return $this->urlFor($path . '?' . $time);
     }
 
     public function image($src, array $htmlOptions = array()) {
@@ -161,7 +161,7 @@ class Joeh_Template_Helper_Html extends Joeh_Template_Helper {
         }
 
         $time = @filemtime(ROOT_PATH . $path);
-        return $this->url->base() . $path . '?' . $time;
+        return $this->urlFor($path . '?' . $time);
     }
 
     public function swfPath($src) {
@@ -173,7 +173,7 @@ class Joeh_Template_Helper_Html extends Joeh_Template_Helper {
         }
 
         $time = @filemtime(ROOT_PATH . $path);
-        return $this->url->base() . $path . '?' . $time;
+        return $this->urlFor($path . '?' . $time);
     }
 
     public function escape() {
@@ -257,6 +257,14 @@ class Joeh_Template_Helper_Html extends Joeh_Template_Helper {
         return $html;
     }
 
+    /**
+     * Make a url using $options parameter, this parameter can be a string
+     * (controller/action/param1/value1/param2/value2) or an array
+     * (array('controller' => 'controllername', 'action' => 'actionname', 'param1' => 'value1')
+     *
+     * @param mixed $options
+     * @return string full url
+     */
     private function urlFor($options) {
         if(is_string($options)) {
         	if(strpos($options, 'http://') === 0) {
