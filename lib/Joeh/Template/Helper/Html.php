@@ -239,14 +239,17 @@ class Joeh_Template_Helper_Html extends Joeh_Template_Helper {
                 $html .= "<li class=\"active\">{$i}</li>";
             }
             else {
-                $html .= "<li><a href=\"{$this->url->current()}?page={$i}&offset={$offset}\">{$i}</a></li>";
+                $href = $this->urlFor(array('page' => $i, 'offset' => $offset));
+                $html .= "<li><a href=\"{$href}\">{$i}</a></li>";
             }
         }
 
         if($currentPage < $totalPages) {
             $nextPage = $currentPage + 1;
-            $html .= "<a href=\"{$this->url->current()}?page={$nextPage}&offset={$offset}\">próxima</a>";
-            $html .= "<li><a href=\"{$this->url->current()}?page={$totalPages}&offset={$offset}\">última</a></li>";
+            $nextHref = $this->urlFor(array('page' => $nextPage, 'offset' => $offset));
+            $lastHref = $this->urlFor(array('page' => $totalPages, 'offset' => $offset));
+            $html .= "<a href=\"{$nextHref}\">próxima</a>";
+            $html .= "<li><a href=\"{$lastHref}\">última</a></li>";
         }
         else {
             $html .= "<li>próxima</li>";
@@ -261,6 +264,8 @@ class Joeh_Template_Helper_Html extends Joeh_Template_Helper {
      * Make a url using $options parameter, this parameter can be a string
      * (controller/action/param1/value1/param2/value2) or an array
      * (array('controller' => 'controllername', 'action' => 'actionname', 'param1' => 'value1')
+     *
+     * TODO remove this method, find a new place for it
      *
      * @param mixed $options
      * @return string full url
