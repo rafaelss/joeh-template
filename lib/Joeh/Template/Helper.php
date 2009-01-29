@@ -36,5 +36,9 @@ abstract class Joeh_Template_Helper {
     public function __get($name) {
         return $this->base->{$name};
     }
+
+    public function __isset($name) {
+        return isset($this->base->{$name});
+    }
 }
 ?>

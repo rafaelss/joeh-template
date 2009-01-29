@@ -145,7 +145,19 @@ class Joeh_Template_Helper_Form extends Joeh_Template_Helper {
 		return $html;
     }
 
-    public function select($name, $options = '', array $htmlOptions = array()) {
+    public function select($object, $property, $textProperty, $from, array $htmlOptions = array()) {
+        $htmlOptions['id'] = sprintf('%s_%s', $object, $property);
+        $name = sprintf('%s[%s]', $object, $property);
+        $value = null;
+
+        if(isset($this->{$object}) && isset($this->{$object}->{$property})) {
+            $value = $this->{$object}->{$property};
+        }
+
+        return $this->selectTag($name, $this->optionsForSelect($from, $textProperty, $property, $value), $htmlOptions);
+    }
+
+    public function selectTag($name, $options = '', array $htmlOptions = array()) {
         $select = new Joeh_Template_Tag('select', $options);
         $select->addAttributesFromArray($htmlOptions);
         $select->name = $name;

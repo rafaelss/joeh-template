@@ -33,6 +33,10 @@ class Joeh_Template_Helper_Html extends Joeh_Template_Helper {
         return "html";
     }
 
+    public function contentTag($tag, $content) {
+        return sprintf("<%s>%s</%s>", $tag, $content, $tag);
+    }
+
     public function scriptTag($url) {
         $script = new Joeh_Template_Tag("script", "");
         $script->type = "text/javascript";
@@ -41,8 +45,8 @@ class Joeh_Template_Helper_Html extends Joeh_Template_Helper {
     }
 
     public function javascriptPath($file) {
-        $path = "assets/js/" . $file;
-        $time = @filemtime(ROOT_PATH . $path);
+        $path = "public/js/" . $file;
+        $time = @filemtime(PUBLIC_PATH . $path);
         return $this->urlFor($path . '?' . $time);
     }
 
@@ -86,15 +90,17 @@ class Joeh_Template_Helper_Html extends Joeh_Template_Helper {
     public function linkTo($title, $options = array(), array $htmlOptions = array()) {
         $href = $this->urlFor($options);
 
-        unset($options['controller']);
-        unset($options['action']);
-        unset($options['id']);
-
-        foreach($options as $key => $value) {
-            if(is_object($value) && method_exists($value, 'toParam')) {
-                $value = $value->toParam();
+        if(is_array($options)) {
+            unset($options['controller']);
+            unset($options['action']);
+            unset($options['id']);
+            
+            foreach($options as $key => $value) {
+                if(is_object($value) && method_exists($value, 'toParam')) {
+                    $value = $value->toParam();
+                }
+                $href .= $key . '/' . $value . '/';
             }
-            $href .= $key . '/' . $value . '/';
         }
 
         return $this->anchor($title, $href, $htmlOptions);
@@ -136,8 +142,8 @@ class Joeh_Template_Helper_Html extends Joeh_Template_Helper {
     }
 
     public function stylesheetPath($file) {
-        $path = "assets/css/" . $file;
-        $time = @filemtime(ROOT_PATH . $path);
+        $path = "public/css/" . $file;
+        $time = @filemtime(PUBLIC_PATH . $path);
         return $this->urlFor($path . '?' . $time);
     }
 
@@ -157,10 +163,10 @@ class Joeh_Template_Helper_Html extends Joeh_Template_Helper {
             $path = $src;
         }
         else {
-            $path = "assets/imgs/" . $src;
+            $path = "public/imgs/" . $src;
         }
 
-        $time = @filemtime(ROOT_PATH . $path);
+        $time = @filemtime(PUBLIC_PATH . $path);
         return $this->urlFor($path . '?' . $time);
     }
 
@@ -169,10 +175,10 @@ class Joeh_Template_Helper_Html extends Joeh_Template_Helper {
             $path = $src;
         }
         else {
-            $path = "assets/swf/" . $src;
+            $path = "public/swf/" . $src;
         }
 
-        $time = @filemtime(ROOT_PATH . $path);
+        $time = @filemtime(PUBLIC_PATH . $path);
         return $this->urlFor($path . '?' . $time);
     }
 
