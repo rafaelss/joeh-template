@@ -33,7 +33,9 @@ class Joeh_Template_Helper_Form extends Joeh_Template_Helper {
     }
 
     public function text($object, $property, array $htmlOptions = array()) {
-        $htmlOptions['id'] = sprintf('%s_%s', $object, $property);
+        if(!isset($htmlOptions['id'])) {
+            $htmlOptions['id'] = sprintf('%s_%s', $object, $property);
+        }
         $name = sprintf('%s[%s]', $object, $property);
         $value = null;
 
@@ -48,7 +50,21 @@ class Joeh_Template_Helper_Form extends Joeh_Template_Helper {
         return $this->input('text', $name, $value, $htmlOptions);
     }
 
-    public function textarea($name, $value = '', array $htmlOptions = array()) {
+    public function textarea($object, $property, array $htmlOptions = array()) {
+        if(!isset($htmlOptions['id'])) {
+            $htmlOptions['id'] = sprintf('%s_%s', $object, $property);
+        }
+        $name = sprintf('%s[%s]', $object, $property);
+        $value = null;
+
+        if(isset($this->{$object}) && isset($this->{$object}->{$property})) {
+            $value = $this->{$object}->{$property};
+        }
+
+        return $this->textareaTag($name, $value, $htmlOptions);
+    }
+
+    public function textareaTag($name, $value = '', array $htmlOptions = array()) {
         if($value === null) {
             $value = '';
         }
@@ -242,7 +258,21 @@ class Joeh_Template_Helper_Form extends Joeh_Template_Helper {
         return $html;
     }
 
-    public function hidden($name, $value = null, array $htmlOptions = array()) {
+    public function hidden($object, $property, array $htmlOptions = array()) {
+        if(!isset($htmlOptions['id'])) {
+            $htmlOptions['id'] = sprintf('%s_%s', $object, $property);
+        }
+        $name = sprintf('%s[%s]', $object, $property);
+        $value = null;
+
+        if(isset($this->{$object}) && isset($this->{$object}->{$property})) {
+            $value = $this->{$object}->{$property};
+        }
+
+        return $this->hiddenTag($name, $value, $htmlOptions = array());
+    }
+
+    public function hiddenTag($name, $value = null, array $htmlOptions = array()) {
         return $this->input('hidden', $name, $value, $htmlOptions);
     }
 
