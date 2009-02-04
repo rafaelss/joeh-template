@@ -161,7 +161,7 @@ class Joeh_Template_Helper_Form extends Joeh_Template_Helper {
 		return $html;
     }
 
-    public function select($object, $property, $textProperty, $from, array $htmlOptions = array()) {
+    public function select($object, $property, $from, array $htmlOptions = array()) {
         $htmlOptions['id'] = sprintf('%s_%s', $object, $property);
         $name = sprintf('%s[%s]', $object, $property);
         $value = null;
@@ -170,7 +170,20 @@ class Joeh_Template_Helper_Form extends Joeh_Template_Helper {
             $value = $this->{$object}->{$property};
         }
 
-        return $this->selectTag($name, $this->optionsForSelect($from, $textProperty, $property, $value), $htmlOptions);
+        $textProperty = "name";
+        $valueProperty = "id";
+
+        if(!empty($htmlOptions["textProperty"])) {
+            $textProperty = $htmlOptions["textProperty"];
+            unset($htmlOptions["textProperty"]);
+        }
+
+        if(!empty($htmlOptions["valueProperty"])) {
+            $valueProperty = $htmlOptions["valueProperty"];
+            unset($htmlOptions["valueProperty"]);
+        }
+
+        return $this->selectTag($name, $this->optionsForSelect($from, $textProperty, $valueProperty, $value), $htmlOptions);
     }
 
     public function selectTag($name, $options = '', array $htmlOptions = array()) {
